@@ -1,5 +1,5 @@
 // app/(auth)/login/page.tsx
-import { login } from "./actions";
+import { loginAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -9,7 +9,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-6">
         <h1 className="text-2xl font-bold">ログイン</h1>
 
-        <form action={login} className="space-y-4">
+        <form action={loginAction}>
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm">
               メールアドレス

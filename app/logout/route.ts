@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServer } from "@/lib/supabase-server";
 
 export async function POST() {
-  const supabase = await createSupabaseServer();
-  await supabase.auth.signOut();
-  return NextResponse.json({ ok: true });
+  const res = NextResponse.redirect(new URL("/login", "http://localhost:3000"));
+  res.cookies.set("session", "", { path: "/", maxAge: 0 });
+  return res;
 }

@@ -1,50 +1,37 @@
-// app/(auth)/login/actions.ts
 "use server";
 
+import bcrypt from "bcrypt";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createServerClient } from "@supabase/ssr";
 
-export async function login(formData: FormData) {
-  const email = String(formData.get("email") ?? "");
+export async function loginAction(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  // 入力が空ならログインしない（失敗扱い）
   if (!email || !password) {
-    console.log("login: missing email/password");
-    return;
+    throw new Error("メールアドレスとパスワードを入力してください");
   }
 
-  const cookieStore = await cookies();
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Server Actionの制限で失敗する場合があるが、CIでの原因切り分けには不要
-          }
-        },
-      },
-    }
-  );
-
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    console.log("login failed:", error.message);
-    return;
+  if (!user) {
+    throw new Error("メールアドレスかパスワードが違います");
   }
 
-  console.log("login success -> redirect /dashboard");
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) {
+    throw new Error("メールアドレスかパスワードが違います");
+  }
+
+  // ✅ ここが重要：ブラウザに残るCookieを「Server Action側で」発行する
+  cookies().set("session", String(user.id), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+  });
+
   redirect("/dashboard");
 }

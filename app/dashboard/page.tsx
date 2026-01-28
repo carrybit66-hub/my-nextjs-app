@@ -1,29 +1,22 @@
-import Link from "next/link";
-
 export default function DashboardPage() {
   return (
-    <div className="space-y-4">
-      <h1 className="text-lg font-semibold">Dashboard</h1>
+    <main style={{ padding: 24 }}>
+      <h1 style={{ fontSize: 24, fontWeight: "bold" }}>ダッシュボード</h1>
+      <p style={{ marginTop: 12 }}>ログイン中です。</p>
 
-      <div className="rounded-md border bg-white p-4">
-        <p className="text-sm text-gray-600">Go to feature pages:</p>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Link
-            href="/dashboard/tasks"
-            className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-          >
-            Tasks
-          </Link>
-
-          <Link
-            href="/admin"
-            className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
-          >
-            Admin
-          </Link>
-        </div>
-      </div>
-    </div>
+      <form action="/api/logout" method="POST" style={{ marginTop: 24 }}>
+        <button
+          type="submit"
+          style={{
+            padding: "10px 16px",
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            cursor: "pointer",
+          }}
+        >
+          ログアウト
+        </button>
+      </form>
+    </main>
   );
 }
