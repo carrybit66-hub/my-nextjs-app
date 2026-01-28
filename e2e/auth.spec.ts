@@ -55,10 +55,20 @@ test.describe("Auth flow (Next.js + Supabase)", () => {
 
     await expect(submit).toBeVisible({ timeout: 30_000 });
 
-    await Promise.all([
-      page.waitForURL(/\/dashboard/i, { timeout: 60_000 }),
-      submit.click(),
-    ]);
+    // ログインボタンをクリック
+await submit.click();
+
+// 少し待つ（画面更新・エラー表示・遷移を待つ）
+await page.waitForTimeout(1500);
+
+// 現在のURLをログに出す（Actionsログで見れる）
+console.log("URL after submit:", page.url());
+
+// 画面スクリーンショットを保存
+await page.screenshot({ path: "after-submit.png", fullPage: true });
+
+// 最終的にダッシュボードに遷移しているかをチェック
+await expect(page).toHaveURL(/\/dashboard/i, { timeout: 60_000 });
 
     await expect(page).toHaveURL(/\/dashboard/i);
   });
