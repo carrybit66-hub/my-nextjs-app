@@ -2,14 +2,20 @@ name: Playwright E2E
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
+
+    # ★ Secrets を Actions の環境変数として渡す（ここが重要）
+    env:
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
     steps:
       - name: Checkout
@@ -21,22 +27,17 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: Install deps
         run: npm ci
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # CIでは .env.test は置かない。Secretsから注入する
       - name: Run Playwright tests
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:3000
-          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
-          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
         run: npm run test:e2e
 
-      - name: Upload Playwright report
-        if: always()
+      - name: Upload Playwright report (on failure)
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
