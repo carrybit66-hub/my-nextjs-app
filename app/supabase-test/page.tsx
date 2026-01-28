@@ -1,29 +1,10 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { supabase } from ''
-
-export default function SupabaseTest() {
-  const [status, setStatus] = useState('接続中...')
-
-  useEffect(() => {
-    const test = async () => {
-      const { data, error } = await supabase.from('stores').select('*')
-
-if (error) {
-  setStatus('エラー: ' + error.message)
-} else if (!data || data.length === 0) {
-  setStatus('接続OK。でもデータはまだ空です')
-} else {
-  setStatus(`接続成功！店舗数: ${data.length}`)
-}
-    }
-    test()
-  }, [])
-
+export default function SupabaseTestPage() {
   return (
-    <div className="p-10 text-xl">
-      {status}
-    </div>
-  )
+    <main style={{ padding: 24 }}>
+      <h1 style={{ fontSize: 24, fontWeight: "bold" }}>Supabase Test</h1>
+      <p style={{ marginTop: 12 }}>
+        このページは一旦停止中です（デプロイ優先でSupabase依存を外しました）
+      </p>
+    </main>
+  );
 }
