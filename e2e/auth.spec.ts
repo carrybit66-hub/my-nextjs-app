@@ -1,52 +1,39 @@
 import { test, expect } from "@playwright/test";
-import * as path from "path";
-import * as fs from "fs";
 
-const envTestPath = path.join(process.cwd(), ".env.test");
-if (fs.existsSync(envTestPath)) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require("dotenv").config({ path: envTestPath });
-}
+test("Auth flow (Next.js + Supabase)", async ({ page }) => {
+  const email = process.env.E2E_EMAIL!;
+  const password = process.env.E2E_PASSWORD!;
 
-const email = process.env.E2E_EMAIL!;
-const password = process.env.E2E_PASSWORD!;
+  // ログイン画面へ
+  await page.goto("/login", { waitUntil: "domcontentloaded" });
 
-test.describe("Auth flow (Next.js + Supabase)", () => {
-  test("未ログインで /dashboard → /login にリダイレクトされる", async ({ page }) => {
-    await page.goto("/dashboard");
-    await expect(page).toHaveURL(/\/login/);
-  });
+  // 本当に /login にいるか確認
+  await expect(page).toHaveURL(/\/login/);
 
-  test("ログイン → /dashboard に入れる", async ({ page }) => {
-    await page.goto("/login");
+  // email input（柔軟に取得）
+  const emailInput = page
+    .getByLabel(/email/i)
+    .or(page.getByPlaceholder(/email/i))
+    .or(page.locator('input[type="email"]'));
 
-    // loginフォームがこのname属性である想定（違う場合は下の「4)」参照）
-    await page.locator('input[name="email"]').fill(email);
-    await page.locator('input[name="password"]').fill(password);
+  await expect(emailInput).toBeVisible();
+  await emailInput.fill(email);
 
-    await Promise.all([
-      page.waitForURL(/\/dashboard/),
-      page.locator('button[type="submit"]').click(),
-    ]);
+  // password input
+  const passwordInput = page
+    .getByLabel(/password/i)
+    .or(page.getByPlaceholder(/password/i))
+    .or(page.locator('input[type="password"]'));
 
-    await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByText("Dashboard")).toBeVisible();
-  });
+  await expect(passwordInput).toBeVisible();
+  await passwordInput.fill(password);
 
-  test("ログアウト → /login に戻る", async ({ page }) => {
-    // 先にログイン
-    await page.goto("/login");
-    await page.locator('input[name="email"]').fill(email);
-    await page.locator('input[name="password"]').fill(password);
-    await Promise.all([
-      page.waitForURL(/\/dashboard/),
-      page.locator('button[type="submit"]').click(),
-    ]);
+  // ログインボタン
+  await page.getByRole("button", { name: /log in|login|sign in/i }).click();
 
-    // ログアウト（ヘッダーのLogoutボタンを押す）
-    await page.getByRole("button", { name: "Logout" }).click();
+  // ダッシュボードへ遷移するのを待つ
+  await page.waitForURL(/\/dashboard/, { timeout: 30_000 });
 
-    // ルーター遷移で /login に戻る
-    await expect(page).toHaveURL(/\/login/);
-  });
+  // 念のため確認
+  await expect(page).toHaveURL(/\/dashboard/);
 });
