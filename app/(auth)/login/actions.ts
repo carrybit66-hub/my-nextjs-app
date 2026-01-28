@@ -26,8 +26,8 @@ export async function loginAction(formData: FormData) {
     throw new Error("メールアドレスかパスワードが違います");
   }
 
-  // ✅ Next.js 16.1.x (Vercel) でも型エラーにならない
   const cookieStore = await cookies();
+
   cookieStore.set("session", String(user.id), {
     httpOnly: true,
     sameSite: "lax",
