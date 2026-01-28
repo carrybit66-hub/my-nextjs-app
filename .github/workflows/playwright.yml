@@ -43,3 +43,11 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 7
+- name: Upload artifacts
+  if: always()
+  uses: actions/upload-artifact@v4
+  with:
+    name: e2e-artifacts
+    path: |
+      test-results/**
+      playwright-report/**

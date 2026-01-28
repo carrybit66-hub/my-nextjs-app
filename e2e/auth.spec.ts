@@ -65,7 +65,7 @@ await page.waitForTimeout(1500);
 console.log("URL after submit:", page.url());
 
 // 画面スクリーンショットを保存
-await page.screenshot({ path: "after-submit.png", fullPage: true });
+await page.screenshot({ path: "test-results/after-submit.png", fullPage: true });
 
 // 最終的にダッシュボードに遷移しているかをチェック
 await expect(page).toHaveURL(/\/dashboard/i, { timeout: 60_000 });
