@@ -1,9 +1,9 @@
 "use server";
 
 import bcrypt from "bcrypt";
-import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -26,8 +26,9 @@ export async function loginAction(formData: FormData) {
     throw new Error("メールアドレスかパスワードが違います");
   }
 
-  // ✅ ここが重要：ブラウザに残るCookieを「Server Action側で」発行する
-  cookies().set("session", String(user.id), {
+  // ✅ Next.js 16.1.x (Vercel) でも型エラーにならない
+  const cookieStore = await cookies();
+  cookieStore.set("session", String(user.id), {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
